@@ -1,0 +1,98 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter --no-color run --machine --track-widget-creation --device-id=windows --start-paused --dart-define=flutter.inspector.structuredErrors=true lib\main.dart
+
+## exception
+
+OutOfMemoryError: Out of Memory
+
+```
+#0      new Uint8List (dart:typed_data-patch/typed_data_patch.dart:2248:3)
+#1      _BytesBuilder.takeBytes (dart:_internal/bytes_builder.dart:205:18)
+#2      ZLibDecoder.convert (dart:io/data_transformer.dart:365:25)
+#3      inflateBuffer_ (package:archive/src/zlib/_inflate_buffer_io.dart:4:33)
+#4      inflateBuffer (package:archive/src/zlib/inflate_buffer.dart:6:10)
+#5      ArchiveFile.decompress (package:archive/src/archive_file.dart:154:22)
+#6      ArchiveFile.content (package:archive/src/archive_file.dart:125:7)
+#7      _WindowsUtils._unpackArchive (package:flutter_tools/src/base/os.dart:557:45)
+#8      _WindowsUtils.unzip (package:flutter_tools/src/base/os.dart:510:5)
+#9      ArtifactUpdater._downloadArchive (package:flutter_tools/src/cache.dart:1111:18)
+#10     _rootRunUnary (dart:async/zone.dart:1406:47)
+#11     _FutureListener.handleValue (dart:async/future_impl.dart:147:18)
+#12     Future._propagateToListeners.handleValueCallback (dart:async/future_impl.dart:784:45)
+#13     Future._propagateToListeners (dart:async/future_impl.dart:813:13)
+#14     _rootRunUnary (dart:async/zone.dart:1406:47)
+#15     _FutureListener.handleValue (dart:async/future_impl.dart:147:18)
+#16     Future._propagateToListeners.handleValueCallback (dart:async/future_impl.dart:784:45)
+#17     Future._propagateToListeners (dart:async/future_impl.dart:813:13)
+#18     Future._complete (dart:async/future_impl.dart:575:7)
+#19     Stream.last.<anonymous closure> (dart:async/stream.dart:1612:20)
+#20     _rootRun (dart:async/zone.dart:1390:47)
+#21     _CustomZone.runGuarded (dart:async/zone.dart:1208:7)
+#22     _BufferingStreamSubscription._sendDone.sendDone (dart:async/stream_impl.dart:392:13)
+#23     _BufferingStreamSubscription._sendDone (dart:async/stream_impl.dart:402:7)
+#24     _DelayedDone.perform (dart:async/stream_impl.dart:534:14)
+#25     _PendingEvents.handleNext (dart:async/stream_impl.dart:620:11)
+#26     _PendingEvents.schedule.<anonymous closure> (dart:async/stream_impl.dart:591:7)
+#27     _rootRun (dart:async/zone.dart:1390:47)
+#28     _CustomZone.runGuarded (dart:async/zone.dart:1208:7)
+#29     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1248:23)
+#30     _rootRun (dart:async/zone.dart:1398:13)
+#31     _CustomZone.runGuarded (dart:async/zone.dart:1208:7)
+#32     _CustomZone.bindCallbackGuarded.<anonymous closure> (dart:async/zone.dart:1248:23)
+#33     _startMicrotaskLoop (dart:async/schedule_microtask.dart:49:5)
+#34     _Timer._runTimers (dart:isolate-patch/timer_impl.dart:405:11)
+#35     _RawReceivePort._handleMessage (dart:isolate-patch/isolate_patch.dart:189:12)
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel master, 3.9.0-12.0.pre.14, on Microsoft Windows [Versi¢n 10.0.19044.2728], locale es-MX)
+    • Flutter version 3.9.0-12.0.pre.14 on channel master at C:\capps\flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision f4c3facfdd (25 hours ago), 2023-03-20 15:32:07 -0700
+    • Engine revision 3b2bbfc859
+    • Dart version 3.0.0 (build 3.0.0-339.0.dev)
+    • DevTools version 2.22.2
+
+[✓] Windows Version (Installed version of Windows is version 10 or higher)
+
+[!] Android toolchain - develop for Android devices (Android SDK version 33.0.2)
+    • Android SDK at C:\Users\Lenovo\AppData\Local\Android\sdk
+    • Platform android-33-ext5, build-tools 33.0.2
+    • Java binary at: C:\Program Files\Android\Android Studio\jbr\bin\java
+    ✗ Could not determine java version
+
+[✓] Chrome - develop for the web
+    • Chrome at C:\Program Files\Google\Chrome\Application\chrome.exe
+
+[!] Visual Studio - develop for Windows (Visual Studio Build Tools 2019 16.11.8)
+    • Visual Studio at C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools
+    • Visual Studio Build Tools 2019 version 16.11.32002.261
+    ✗ The current Visual Studio installation is incomplete. Please reinstall Visual Studio.
+
+[✓] Android Studio (version 2022.1)
+    • Android Studio at C:\Program Files\Android\Android Studio
+    • Flutter plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/9212-flutter
+    • Dart plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/6351-dart
+    • Java version OpenJDK Runtime Environment (build 11.0.15+0-b2043.56-9505619)
+
+[✓] Connected device (3 available)
+    • Windows (desktop) • windows • windows-x64    • Microsoft Windows [Versi¢n 10.0.19044.2728]
+    • Chrome (web)      • chrome  • web-javascript • Google Chrome 111.0.5563.65
+    • Edge (web)        • edge    • web-javascript • Microsoft Edge 110.0.1587.69
+    ! Device 320115889923 is not authorized.
+      You might need to check your device for an authorization dialog.
+    ! Device emulator-5554 is offline.
+
+[✓] Network resources
+    • All expected network resources are available.
+
+! Doctor found issues in 2 categories.
+```

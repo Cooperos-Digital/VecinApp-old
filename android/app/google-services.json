@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "995541774463",
+    "project_id": "vecinapp-2",
+    "storage_bucket": "vecinapp-2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995541774463:android:425840cedf64b782568f4a",
+        "android_client_info": {
+          "package_name": "com.cooperos.vecinapp_2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "995541774463-l7u4ladubcumcq3st1lqkp60bs5tn2ea.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvs5NZX-xLkU1U2MTQeosyKoJ55uGP-U0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "995541774463-l7u4ladubcumcq3st1lqkp60bs5tn2ea.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "995541774463-9tn3tah33nglvdeg9cii2o99uhbjjqpl.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cooperos.vecinapp2.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
