@@ -30,6 +30,10 @@ dependencies:
   cupertino_icons: ^1.0.2    # Cupertino Icons font - CupertinoIcons class for iOS style icons.
   firebase_auth: ^4.3.0
   firebase_core: ^2.8.0
+  cloud_firestore: ^4.5.0
+  firebase_storage: ^11.1.0
+  google_sign_in: ^6.1.0
+  image_picker: ^0.8.7+2
 
 
 dev_dependencies:
@@ -37,9 +41,14 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
 
+
 # For information on the generic Dart part of this file: https://dart.dev/tools/pub/pubspec
 
 flutter:
+  assets:
+    - assets/cliente.jpg
+    - assets/proximo-cliente.png
+    - assets/usuario1.jpg
 
   # Material Icons font is included - Icons class.
   uses-material-design: true

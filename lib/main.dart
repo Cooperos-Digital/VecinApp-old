@@ -3,32 +3,58 @@
 
 // MÓDULOS pubspec
 import 'package:flutter/material.dart';
-//import 'package:firebase_auth/firebase_core.auth';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 
+
 // CLASES
-import 'registro.dart';
+import 'ingreso.dart';
 //import 'registro_cloud.dart';
-import "signup.dart";
+import "registro.dart";
 import 'perfil.dart';
 import 'home.dart';
-
+import "preferencias.dart";
 
 
 // INICIALIZAR LA APP
-// Future<void> main() async {}...
-void main() async {
+// Void main() async {}...
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+//  await FirebaseAuth.instance.useAuthEmulator('localhost', 53531);
+
+
+  // ESTO POR AHORA NO HACE NADA
+  // PERO ESTO SE PUEDE USAR PARA DETECTAR SI EL USUARIO YA ESTABA REGISTRADO Y MANDARLO DIRECTAMENTE AL HOME.
+  // con un StreamBuilder widget.
+  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    if (user == null) {
+      print('User is currently signed out!');
+      print("Usuario id: ${user?.uid}");
+      //Navigator.of(context).pushNamed("/registro");
+    } else {
+      print('User is signed in!');
+      //Navigator.of(context).pushNamed("/home");
+    }
+  });
+
+  //final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+  //final user = userCredential.user;
+
+
+
+
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  final String userEmail = "";
 
 
   // CONFIGURACIÓN INICIAL
@@ -51,10 +77,11 @@ class MyApp extends StatelessWidget {
 
       // RUTAS (PÁGINAS)
       routes: <String, WidgetBuilder> {
+        "/ingreso": (BuildContext context) => IngresoPag(),
         "/registro": (BuildContext context) => RegistroPag(),
-        "/signup": (BuildContext context) => SignupPag(),
-        "/home": (BuildContext context) => HomePag(),
+        "/home": (BuildContext context) => HomePag(userEmail: userEmail),
         "/perfil": (BuildContext context) => PerfilPag(),
+        "/preferencias": (BuildContext context) => PreferenciasPag(),
       }
     );
   }
@@ -63,6 +90,7 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
+
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -134,8 +162,28 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 onPressed: () {
                   print("Vamos a la página de ingreso.");
-                  Navigator.of(context).pushNamed("/registro");
-                  //appState.RegistroPag
+                  //Navigator.of(context).pushNamed("/registro");
+
+                  FirebaseAuth.instance.authStateChanges().listen((User? user) {
+                    if (user == null) {
+                      Navigator.of(context).pushNamed("/ingreso");
+                      print('User is currently signed out!');
+                    } else {
+                      Navigator.of(context).pushNamed("/home");
+                      print('User is signed in!');
+                      print("User id: ${user.uid}");
+                      print("User email: ${user.email}");
+                      //appState.userEmail = user.email;
+//                      _userEmail = user.email == null ? user.email : "";
+//                      var fwe = user.email;
+//                      Navigator.of(context).push(
+//                        MaterialPageRoute(
+//                          builder: (context) => HomePag(userEmail: fwe),
+//                        ),
+//                      );
+
+                    }
+                  });
                 },
               )
             ),
