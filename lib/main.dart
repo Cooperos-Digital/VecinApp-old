@@ -56,23 +56,19 @@ class MyApp extends StatelessWidget {
 
   final String userEmail = "";
 
-
   // CONFIGURACIÓN INICIAL
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
     return MaterialApp(
-      home: const MyHomePage(title: 'VecinApp'),
-      debugShowCheckedModeBanner: false,
-      title: 'VecinApp',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
-        //buttonColor: Colors.lightGreen,
-        buttonTheme: const ButtonThemeData(
-          textTheme: ButtonTextTheme.primary,
+        home: const MyHomePage(title: 'VecinApp'),
+        debugShowCheckedModeBanner: false,
+        title: 'VecinApp',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen),
+          //buttonColor: Colors.lightGreen,
+          buttonTheme: const ButtonThemeData(
+            textTheme: ButtonTextTheme.primary,
+          ),
+          useMaterial3: true,
         ),
-        useMaterial3: true,
-      ),
 
 
       // RUTAS (PÁGINAS)
@@ -96,58 +92,59 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-
 // PÁGINA PRINCIPAL
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+        body: Center(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
 
-          // ESTRUCTURA
-          children: <Widget>[
-            SizedBox(height: 120),
+        // ESTRUCTURA
+        children: <Widget>[
+          SizedBox(height: 120),
 
-            // TÍTULO
-            Container(
+          // TÍTULO
+          Container(
               child: Stack(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(30),
-                    child: Text("VecinApp",
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "Arial",
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                  )
-                ],
-              )
-            ),
-
-            SizedBox(height: 40),
-
-            //PRESENTACIÓN / FRASE
-            Container(
-                padding: EdgeInsets.all(20),
-                child: Text("A ponernos de acuerdo",
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.all(30),
+                child: Text(
+                  "VecinApp",
                   style: TextStyle(
-                    fontSize: 24,
-                    fontFamily: "Montserrat",
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: "Arial",
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                )
-            ),
+                ),
+              )
+            ],
+          )),
 
-            //SizedBox(height: 300),
-            Spacer(flex: 2,),
+          SizedBox(height: 40),
 
-            // BOTÓN
-            Container(
+          //PRESENTACIÓN / FRASE
+          Container(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                "A ponernos de acuerdo",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontFamily: "Montserrat",
+                ),
+              )),
+
+          //SizedBox(height: 300),
+          Spacer(
+            flex: 2,
+          ),
+
+          // BOTÓN
+          Container(
               width: 300,
               padding: EdgeInsets.all(20),
               child: ElevatedButton(
@@ -185,13 +182,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     }
                   });
                 },
-              )
-            ),
+              )),
 
-            SizedBox(height: 60),
-          ],
-        ),
-      )
-    );
+          SizedBox(height: 60),
+        ],
+      ),
+    ));
   }
 }
