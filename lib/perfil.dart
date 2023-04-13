@@ -15,7 +15,7 @@ class _PerfilPagState extends State<PerfilPag> {
   String imagenUrl = "";
 
 
-  // ESCOGER IMAGEN DE PERFIL
+  // ESCOGER IMAGEN DE PERFIL  -
   // https://www.youtube.com/watch?v=0mLICZlWb2k&t=94s
   //void escogerImagenPerfil() async {
   //  print("subiendo imagen...");
