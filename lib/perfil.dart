@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
+
+import 'package:image_picker_web/image_picker_web.dart';
 
 
 class PerfilPag extends StatefulWidget {
@@ -17,6 +20,8 @@ class _PerfilPagState extends State<PerfilPag> {
 
   // ESCOGER IMAGEN DE PERFIL  -
   // https://www.youtube.com/watch?v=0mLICZlWb2k&t=94s
+  // and this one for web: https://www.youtube.com/watch?v=vZHWE6S9RHY
+  // Tristemente creo que no funcionan bien. Aún. Falta entenderle más
   //void escogerImagenPerfil() async {
   //  print("subiendo imagen...");
   //  final imagen = await ImagePicker().pickImage(
@@ -37,27 +42,37 @@ class _PerfilPagState extends State<PerfilPag> {
   //    }),
   //  });
   //}
-  PickedFile? _image;
+  //PickedFile? _image;
+
   Future<void> getImage() async {
-    final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    PickedFile? pickedFile;
+    if (kIsWeb) {
+      print("Aplicación corriendo en Web");
+//      pickedFile = await ImagePickerWeb.getImageAsFile();   // or as a File?
+      print(pickedFile);
+
+    } else {
+      pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+      print(pickedFile);
+    }
 
     setState(() {
-      _image = pickedFile;
+    //  _image = pickedFile! ?? "";
     });
   }
   // Implement function to upload image to Firebase storage
-  FirebaseStorage storage = FirebaseStorage.instance;
+  //FirebaseStorage storage = FirebaseStorage.instance;
 
-  Future<String> uploadFile() async {
-    Reference reference = storage.ref().child('images/${_image!.path}');
-    UploadTask uploadTask = reference.putFile(File(_image!.path));
-    TaskSnapshot taskSnapshot = await uploadTask;
-    String url = await taskSnapshot.ref.getDownloadURL();
-    setState(() {
-      imagenUrl = url;
-    });
-    return url;
-  }
+  //Future<String> uploadFile() async {
+  //  Reference reference = storage.ref().child('images/${_image!.path}');
+  //  UploadTask uploadTask = reference.putFile(File(_image!.path));
+  //  TaskSnapshot taskSnapshot = await uploadTask;
+  //  String url = await taskSnapshot.ref.getDownloadURL();
+  //  setState(() {
+  //    imagenUrl = url;
+  //  });
+  //  return url;
+  //}
 
 // Save image URL to user's profile in Firestore
 //  final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -70,6 +85,18 @@ class _PerfilPagState extends State<PerfilPag> {
 
 
 
+
+  // ELIMINAR CUENTA
+  void eliminarCuenta() async {
+    await FirebaseAuth.instance.currentUser?.delete();
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Es una pena ver que te vas. Tu cuenta se ha eliminado.', style: Theme.of(context).textTheme.bodyLarge),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+        )
+    );
+  }
 
 
 
@@ -119,7 +146,7 @@ class _PerfilPagState extends State<PerfilPag> {
                   onTap: () async {
                     //escogerImagenPerfil();
                     getImage();
-                    uploadFile();
+                    //uploadFile();
                     print("Imagen de usuario: ${imagenUrl}");
                   },
 
@@ -259,15 +286,7 @@ class _PerfilPagState extends State<PerfilPag> {
                     onPressed: () async {
                       print("Eliminar cuenta...");
                       if (FirebaseAuth.instance.currentUser != null) {
-                        await FirebaseAuth.instance.currentUser?.delete();
-                        //Navigator.of(context).pop();
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Es una pena ver que te vas. Tu cuenta se ha eliminado.', style: Theme.of(context).textTheme.bodyLarge),
-                              backgroundColor: Theme.of(context).colorScheme.surface,
-                            )
-                        );
+                        eliminarCuenta();
                       }
 //                     await user? delete;
                     },
