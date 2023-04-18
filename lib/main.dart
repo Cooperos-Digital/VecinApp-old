@@ -77,6 +77,7 @@ class MyApp extends StatelessWidget {
 
       // RUTAS (PÁGINAS)
       routes: <String, WidgetBuilder> {
+        //'/': (context) => MyHomePage(),
         "/ingreso": (BuildContext context) => IngresoPag(),
         "/registro": (BuildContext context) => RegistroPag(),
         "/home": (BuildContext context) => HomePag(userEmail: userEmail),

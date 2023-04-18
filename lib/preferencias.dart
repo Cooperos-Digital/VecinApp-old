@@ -45,21 +45,21 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
 
               // LISTA
               ListTile(
-                leading: Icon(Icons.message),
+                leading: Icon(Icons.book),
                 title: Text('Aprende a usar VecinApp'),
                 onTap: () {
                   print("Manual de usuario.");
                 },
               ),
               ListTile(
-                leading: Icon(Icons.account_circle),
+                leading: Icon(Icons.info),
                 title: Text('Acerca de'),
                 onTap: () {
                   print("Sobre el proyecto");
                 },
               ),
               ListTile(
-                leading: Icon(Icons.settings),
+                leading: Icon(Icons.password),
                 title: Text('Cambiar contraseña'),
                 onTap: () async {
                   //https://firebase.google.com/docs/auth/flutter/manage-users?hl=es-419
@@ -79,18 +79,10 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.face),
+                leading: Icon(Icons.dangerous),
                 title: Text('Borrar cuenta'),
                 onTap: () {
                   _alertaCerrarSesion();
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.face_2),
-                title: Text('Regresar al inicio'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
                 },
               ),
             ],

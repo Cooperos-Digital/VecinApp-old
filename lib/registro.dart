@@ -8,8 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 //import "main.dart";
 //import "ingreso.dart";
 
-final FirebaseAuth _auth = FirebaseAuth.instance;
-final _firestore = FirebaseFirestore.instance;
+
 
 class RegistroPag extends StatefulWidget {
   @override
@@ -17,6 +16,8 @@ class RegistroPag extends StatefulWidget {
 }
 
 class _RegistroPagState extends State<RegistroPag> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   bool _error = false;
   String descripError = "";
 
@@ -28,8 +29,11 @@ class _RegistroPagState extends State<RegistroPag> {
 
 
   // FUNCIÓN REGISTRO
-  // debería llevar <Future>?
-  void _register() async {
+  // debería llevar <Future> o no?
+  Future<void> _register() async {
+    CollectionReference usuarios = _firestore.collection("usuarios");
+
+
     try {
       final User? user = (
           await _auth.createUserWithEmailAndPassword(
@@ -42,13 +46,19 @@ class _RegistroPagState extends State<RegistroPag> {
 
       if (user != null) {
         await _firestore
-            .collection("Usuarios")
+            .collection("usuarios")
             .doc(user.uid)
             .set({
           "email": _emailController.text,
           "nombre": _nombreController.text,
           "apellido": _apellidoController.text,
         });
+        //usuarios.add({
+        //  "uid": _auth.currentUser?.uid,
+        //  "nombre": _nombreController.text,
+        //  "apellido": _apellidoController.text,
+        //  "email": _emailController.text,
+        //});
 
         await user.updateDisplayName(_nombreController.text);
         //await user.update(_apellidoController.text);
@@ -81,20 +91,22 @@ class _RegistroPagState extends State<RegistroPag> {
         });
       }
       // ERRORES
-    } on FirebaseAuthException catch (e) {
-      print("El correo ingresado ya está registrado en el sistema. Error ${e}");
+    } on FirebaseException catch (e) {
+      print("Tuvimos un error, compañero:  ${e}");
       setState(() {
         _error = true;
       });
 
       if (e.code == "weak-password") {
-        descripError = "La contraseña debe de contener un mínimo de 6 caracteres.";
+        descripError =
+        "La contraseña debe de contener un mínimo de 6 caracteres.";
       }
       else if (e.code == "email-already-in-use") {
-        descripError = "El correo ingresado ya se encuentra en el sistema. Regresa para iniciar sesión o restablece tu contraseña.";
+        descripError =
+        "El correo ingresado ya se encuentra en el sistema. Regresa para iniciar sesión o restablece tu contraseña.";
+      } else {
+        descripError = e.toString();
       }
-    } catch (e) {
-      descripError = e.toString();
     }
   }
 
@@ -253,7 +265,7 @@ class _RegistroPagState extends State<RegistroPag> {
 
                   // MENSAJE DE ERROR, EN CASO DE HABER
                   Container(
-                    child: Text(_error == true ? descripError : ""),
+                    child: Text(_error == true ? "Hubo un error: ${descripError}" : ""),
                   ),
 
                   SizedBox(height: 30,),

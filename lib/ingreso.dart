@@ -19,32 +19,38 @@ class _IngresoPagState extends State<IngresoPag> {
   final TextEditingController _passwordController = TextEditingController();
   late bool _sucess;
   late String  _userEmail;
+  bool _error = false;
+  String descripError = "";
 
   void _login() async {
     print("Corriendo función _login()");
-    final User? user = (
-        await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text)
-    ).user;
+    try {
+      final User? user = (
+          await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text)
+      ).user;
 
-    if (user != null) {
-      setState(() {
+      if (user != null) {
+        setState(() {
 //        _sucess = true;
-        _userEmail = user.email!;
-        print("SE PUDO INGRESAR CON ÉXITO. Correo: ${_userEmail}");
+          _userEmail = user.email!;
+          print("SE PUDO INGRESAR CON ÉXITO. Correo: ${_userEmail}");
 
-        //Navigator.of(context).pushNamed("/home",);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => HomePag(userEmail: _userEmail),
-          ),
-        );
-      });
-    } else {
-      setState(() {
-        // Creo que esto aún no se corre porque falta agregar un handle error en el  await _auth.signIn...  o algo así
-        _sucess = false;
-        print("NO SE PUDO INGRESAR");
-      });
+          //Navigator.of(context).pushNamed("/home",);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => HomePag(userEmail: _userEmail),
+            ),
+          );
+        });
+      } else {
+        setState(() {
+          // Creo que esto aún no se corre porque falta agregar un handle error en el  await _auth.signIn...  o algo así
+          _sucess = false;
+          print("NO SE PUDO INGRESAR");
+        });
+      }
+    } catch (e) {
+      descripError = e.toString();
     }
   }
 
@@ -135,7 +141,10 @@ class _IngresoPagState extends State<IngresoPag> {
                       )
                   ),
 
-                  //SizedBox(height: 120),
+                  SizedBox(height: 30),
+                  Container(
+                    child: Text(_error == true ? descripError : ""),
+                  ),
                   Spacer(
                     flex: 1,
                   ),
