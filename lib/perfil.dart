@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
 
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:vecinapp_2/logica/funciones_usuario.dart';
 
 
 class PerfilPag extends StatefulWidget {
@@ -18,7 +19,11 @@ class PerfilPag extends StatefulWidget {
 class _PerfilPagState extends State<PerfilPag> {
   String _nombre = "Persona";
   String _apellido = "Anónima";
-  String _email = "";
+  String _email = "sin correo";
+  String _colonia_id = "colonia id";
+  String _colonia = "colonia";
+  String _ciudad = "ciudad";
+  String _estado = "estado";
   String _photoUrl = "";
 
   @override
@@ -36,6 +41,10 @@ class _PerfilPagState extends State<PerfilPag> {
       _nombre = snapshot.get('nombre');
       _apellido = snapshot.get("apellido");
       _email = snapshot.get('email');
+      _colonia_id = snapshot.get('colonia-id');
+      _colonia = snapshot.get('colonia');
+      _ciudad = snapshot.get("ciudad");
+      _estado = snapshot.get('estado');
       //_photoUrl = snapshot.get('photoUrl');
     });
   }
@@ -105,20 +114,6 @@ class _PerfilPagState extends State<PerfilPag> {
 //    });
 //  }
 
-
-
-
-  // ELIMINAR CUENTA
-  void eliminarCuenta() async {
-    Navigator.pop(context);
-    await FirebaseAuth.instance.currentUser?.delete();
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Es una pena ver que te vas. Tu cuenta se ha eliminado.', style: Theme.of(context).textTheme.bodyLarge),
-          backgroundColor: Theme.of(context).colorScheme.surface,
-        )
-    );
-  }
 
 
 
@@ -194,6 +189,11 @@ class _PerfilPagState extends State<PerfilPag> {
 
               Text("Foto: ${FirebaseAuth.instance.currentUser?.photoURL}"),
               Text("Foto: ${_photoUrl}"),
+              Text("$_colonia."),
+              Text("$_ciudad, $_estado."),
+              Text("$_colonia_id"),
+              Text("Gente de tu colonia"),
+
               SizedBox(height: 45,),
 
 
@@ -232,16 +232,11 @@ class _PerfilPagState extends State<PerfilPag> {
                   ListTile(
                     title: Text("Verificación"),
                     subtitle: Text(
-                      //if ( FirebaseAuth.instance.currentUser?.emailVerified == true) {
-                      //  FirebaseAuth.instance.currentUser?.emailVerified : "Aún no tienes correo, ingresa uno."),
-                      //}
-
                       FirebaseAuth.instance.currentUser?.emailVerified == true ? "Usuario verificado" : "Aún no estás verificado. ¡Solicita tu correo de verificación!"
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.edit),
                       onPressed: () {
-
                         print("se verá más bonito?");
                       },
                     )
@@ -261,7 +256,8 @@ class _PerfilPagState extends State<PerfilPag> {
                   ),
                   onPressed: () {
                     print("Cerrando sesión...");
-                    FirebaseAuth.instance.signOut();
+                    cerrarSesion();
+                    //FirebaseAuth.instance.signOut();
                     //Navigator.of(context).pup();
                     Navigator.pop(context);
                   },
@@ -272,23 +268,23 @@ class _PerfilPagState extends State<PerfilPag> {
 
 
               // BOTÓN ELIMINAR CUENTA
-              Container(
-                child: TextButton(
-                  child: Text(
-                    "Eliminar cuenta",
-                    //style: ButtonThemeData.textTheme,
-                  ),
-                  onPressed: () async {
-                    print("Eliminar cuenta...");
-                    if (FirebaseAuth.instance.currentUser != null) {
-                      eliminarCuenta();
-                    }
-//                     await user? delete;
-                  },
-                ),
-              ),
+              //Container(
+              //  child: TextButton(
+              //    child: Text(
+              //      "Eliminar cuenta",
+              //      //style: ButtonThemeData.textTheme,
+              //    ),
+              //    onPressed: () async {
+              //      print("Eliminar cuenta...");
+              //      if (FirebaseAuth.instance.currentUser != null) {
+              //        eliminarCuenta();
+              //      }
+//            //         await user? delete;
+              //    },
+              //  ),
+              //),
 
-              SizedBox(height: 15,),
+              //SizedBox(height: 15,),
 
 
               // BOTÓN RESTABLECER CONTRASEÑA

@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vecinapp_2/main_chat_pag.dart';
 import 'firebase_options.dart';
 
 
@@ -32,30 +33,24 @@ Future<void> main() async {
   // con un StreamBuilder widget.
   FirebaseAuth.instance.authStateChanges().listen((User? user) {
     if (user == null) {
-      print('User is currently signed out!');
-      print("Usuario id: ${user?.uid}");
       //Navigator.of(context).pushNamed("/registro");
+      print('User is currently signed out!');
     } else {
-      print('User is signed in!');
       //Navigator.of(context).pushNamed("/home");
+      print('User is signed in!');
+      print("Usuario id: ${user.uid}");
+      print("Usuario correo: ${user.email}");
     }
   });
-
   //final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
   //final user = userCredential.user;
-
-
-
-
 
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   final String userEmail = "";
-
 
   // CONFIGURACIÓN INICIAL
   // This widget is the root of your application.
@@ -83,6 +78,7 @@ class MyApp extends StatelessWidget {
         "/home": (BuildContext context) => HomePag(userEmail: userEmail),
         "/perfil": (BuildContext context) => PerfilPag(),
         "/preferencias": (BuildContext context) => PreferenciasPag(),
+        "/chat": (BuildContext context) => MainChatPag(),
       }
     );
   }

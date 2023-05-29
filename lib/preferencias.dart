@@ -1,6 +1,9 @@
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vecinapp_2/logica/funciones_usuario.dart';
+
 
 class PreferenciasPag extends StatefulWidget {
 
@@ -12,6 +15,9 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
   final user = FirebaseAuth.instance.currentUser;
 //  final String _userEmail = user.emailEmail ?? "";
 
+
+
+  // BUILD METHOD
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,10 +85,17 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
                 },
               ),
               ListTile(
+                leading: Icon(Icons.logout),
+                title: Text('Cerrar sesión'),
+                onTap: () {
+                  FirebaseAuth.instance.signOut();
+                },
+              ),
+              ListTile(
                 leading: Icon(Icons.dangerous),
                 title: Text('Borrar cuenta'),
                 onTap: () {
-                  _alertaCerrarSesion();
+                  borrarCuenta(context);
                 },
               ),
             ],
@@ -90,47 +103,4 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
     );
   }
 
-
-
-
-  // FUNCIONES
-  Future<void> _alertaCerrarSesion() async {
-    return showDialog<void>(
-      context: context,
-//      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text('Eliminar cuenta'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ListBody(
-                  children: const <Widget>[
-                    Text('Si decides continuar, se borrarán tus datos de nuestro sistema.'),
-                    Text('¿Deseas continuar?'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Aceptar'),
-              onPressed: () async {
-                Navigator.pop(context);
-                //Navigator.of(context).pop();
-                SnackBar(
-                  content: Text("Tus datos se han borrado con éxito."),
-                );
-                await user?.delete();
-
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

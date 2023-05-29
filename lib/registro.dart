@@ -1,12 +1,17 @@
+//import 'dart:convert';
+import 'dart:core';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import 'package:csv/csv.dart';
 
-//import "main.dart";
-//import "ingreso.dart";
+import 'package:vecinapp_2/comp/registro_direccion_csv.dart';
+
 
 
 
@@ -20,12 +25,116 @@ class _RegistroPagState extends State<RegistroPag> {
   final _firestore = FirebaseFirestore.instance;
   bool _error = false;
   String descripError = "";
+//  List<String> _sugerencias = [];
+
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _apellidoController = TextEditingController();
-//  late String _userEmail;
+  final TextEditingController _apellidoController = TextEditingController();   // quito el final de los demás?
+
+
+  List<Estado> estados = [Estado("19", "Nuevo León"), Estado("14", "Jalisco")];
+  List<Ciudad> ciudades = [];
+  List<Colonia> colonias = [];
+
+  var selectedState;
+  var selectedCity;
+  var selectedNeighborhood;
+
+  List<List<dynamic>> csvTable = [[]];
+
+
+  // cargar datos de colonias, ciudades y estados del CSV
+  Future<void> cargarColonias() async {
+    final data = await rootBundle.loadString('assets/colonias.csv');
+    //final List<List<dynamic>> csvTable = CsvToListConverter().convert(data);
+    setState(() {
+      csvTable = CsvToListConverter().convert(data);
+    });
+  }
+
+
+  Future<void> cargarDropdown() async {
+    print("Iniciando función para mostrar ciudades");
+    for (var row in csvTable) {
+
+      var ciudad = ciudades.firstWhere((ciudad) => ciudad.name == "${row[3]}" && ciudad.estadoId == selectedState.id,
+          orElse: () => Ciudad("id", "nombre", "estadoId"));
+      if (ciudad.name == "nombre") {
+        ciudad = Ciudad("${row[2]}", "${row[3]}", selectedState.id);
+        ciudades.add(ciudad);
+      }
+    }
+  }
+
+  // Check if the city already exists in the list of cities
+  Future<void> cargarDropdownColonias() async {
+    print("Iniciando función para mostrar colonias en la ciudad seleccionada.");
+    for (var row in csvTable) {
+      var estadoId = "${row[0]}";
+      var ciudadId = "${row[2]}";
+      var coloniaNombre = "${row[4]}";
+      var id = "$estadoId-$ciudadId-$coloniaNombre";
+
+      var colonia = colonias.firstWhere((colonia) => colonia.name == coloniaNombre && colonia.ciudadId == selectedCity.id,
+          orElse: () => Colonia("id", "nombre", "ciudadId"));
+      if (colonia.name == "nombre") {
+        //colonia = Colonia("1", coloniaNombre, selectedCity.id);   //ciudadId
+        colonia = Colonia(id, coloniaNombre, ciudadId);
+        colonias.add(colonia);
+      };
+    }
+    colonias = colonias.where((colonia) => colonia.ciudadId == selectedCity.id).toList();
+  }
+
+
+
+
+
+  // FUNCIÓN CREAR COLONIA
+  // Revisa si ya existe un grupo para la colonia seleccionada. Si sí, agrega al usuario. Si no, crea el grupo.
+  Future<void> _crearColonia() async {
+    CollectionReference coleccionColonias = _firestore.collection("colonias");
+    DocumentReference doc = coleccionColonias.doc(selectedNeighborhood.id);
+    print(coleccionColonias);
+    print("Selected Colonia: $doc");
+
+
+    //QuerySnapshot querySnapshot = await coleccionColonias.doc(collectionId).limit(1).get();
+    //DocumentSnapshot querySnapshot = await coleccionColonias.doc(selectedNeighborhood.id).get();
+    //Document querySnapshot = await coleccionColonias.doc(selectedNeighborhood.id).get();
+
+    QuerySnapshot querySnapshot = await coleccionColonias.where("id", isEqualTo: selectedNeighborhood.id).get();
+
+    if (querySnapshot.docs.isNotEmpty) {   // Revisar si existe una colección con ese id.
+      //coleccionColonias.up
+//      coleccionColonias.where("id", isEqualTo: selectedNeighborhood.id).update({)
+      await doc.update({
+        "miembros": FieldValue.arrayUnion([_auth.currentUser?.uid]),
+        //"miembros": FieldValue.arrayUnion([_firestore.collection("usuarios").doc(user?.uid).id]),
+      });
+
+    } else {
+      //await coleccionColonias.add({   // crear nuevo grupo de colonia
+      //  "id": selectedNeighborhood.id,
+      //  "nombre": selectedNeighborhood.name,
+      //  "ciudad": selectedCity.name,
+      //  "estado": selectedState.name,
+      //  //"miembros": [_auth.currentUser?.uid],
+      //});
+      await doc.set({   // crear nuevo grupo de colonia
+      //await coleccionColonias.doc(selectedNeighborhood.id).set({   // crear nuevo grupo de colonia
+        "id": selectedNeighborhood.id,
+        "nombre": selectedNeighborhood.name,
+        "ciudad": selectedCity.name,
+        "estado": selectedState.name,
+        "miembros": [_auth.currentUser?.uid],
+      });
+    }
+  }
+
+
 
 
   // FUNCIÓN REGISTRO
@@ -33,25 +142,25 @@ class _RegistroPagState extends State<RegistroPag> {
   Future<void> _register() async {
     CollectionReference usuarios = _firestore.collection("usuarios");
 
-
     try {
       final User? user = (
           await _auth.createUserWithEmailAndPassword(
             email: _emailController.text,
             password: _passwordController.text,
-            //displayName: _nombreController.text,
-            //apellido: _apellidoController.text,
           )
       ).user;
 
       if (user != null) {
-        await _firestore
-            .collection("usuarios")
-            .doc(user.uid)
-            .set({
+        await usuarios.doc(user.uid).set({
           "email": _emailController.text,
           "nombre": _nombreController.text,
           "apellido": _apellidoController.text,
+          "estado": selectedState.name,
+          "ciudad": selectedCity.name,
+          "colonia": selectedNeighborhood.name,
+          "colonia-id": selectedNeighborhood.id,
+          "fecha-creacion": DateTime.now(),
+          "ultima-conexion": DateTime.now(),
         });
         //usuarios.add({
         //  "uid": _auth.currentUser?.uid,
@@ -62,34 +171,22 @@ class _RegistroPagState extends State<RegistroPag> {
 
         await user.updateDisplayName(_nombreController.text);
         //await user.update(_apellidoController.text);
-//      await user.
 
         await user.sendEmailVerification();
 
-        setState(() {
-          //_userEmail = user.email!;
-          print("SE REGISTRÓ AL USUARIO CON ÉXITO");
-        });
+        print("SE REGISTRÓ AL USUARIO CON ÉXITO");
 
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Te enviamos un correo para verificar tu cuenta.',
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .bodyLarge),
               //content: Text('Te has registrado con éxito. ¡Bienvenido a VecinApp!', style: Theme.of(context).textTheme.bodyLarge),
-              backgroundColor: Theme
-                  .of(context)
-                  .colorScheme
-                  .inversePrimary,
+              content: Text('Te enviamos un correo para verificar tu cuenta.', style: Theme.of(context).textTheme.bodyLarge),
+              backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             )
         );
       } else {
-        setState(() {
-          print("NO SE PUDO REGISTRAR");
-        });
-      }
+        print("NO SE PUDO REGISTRAR");
+       }
+
       // ERRORES
     } on FirebaseException catch (e) {
       print("Tuvimos un error, compañero:  ${e}");
@@ -98,16 +195,16 @@ class _RegistroPagState extends State<RegistroPag> {
       });
 
       if (e.code == "weak-password") {
-        descripError =
-        "La contraseña debe de contener un mínimo de 6 caracteres.";
-      }
-      else if (e.code == "email-already-in-use") {
-        descripError =
-        "El correo ingresado ya se encuentra en el sistema. Regresa para iniciar sesión o restablece tu contraseña.";
+        descripError = "La contraseña debe de contener un mínimo de 6 caracteres.";
+      } else if (e.code == "auth/email-already-in-use") {
+        descripError = "El correo ingresado ya se encuentra en el sistema. Regresa para iniciar sesión o restablece tu contraseña.";
       } else {
         descripError = e.toString();
       }
     }
+
+    // Llamar la función para agregar al usuario a la colonia.
+    _crearColonia();
   }
 
     //UserUpdateInfo().displayName = _nombreController.text;
@@ -122,8 +219,7 @@ class _RegistroPagState extends State<RegistroPag> {
   Future<UserCredential> signInWithGoogle() async {
     // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn(
-      // MI API
-      clientId: "944413830907-rvd45ucb788nid7ubd4eg406smm3v1i9.apps.googleusercontent.com",
+      clientId: "944413830907-rvd45ucb788nid7ubd4eg406smm3v1i9.apps.googleusercontent.com",        // MI API
     ).signIn();
 
     // Obtain the auth details from the request
@@ -141,6 +237,15 @@ class _RegistroPagState extends State<RegistroPag> {
     final UserCredential user = await FirebaseAuth.instance.signInWithCredential(credential);
 
     return user;
+  }
+
+
+
+  // INIT STATE
+  @override
+  void initState() {
+    super.initState();
+    cargarColonias();
   }
 
 
@@ -181,7 +286,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   // PEDIR NOMBRE
                   Container(
                       width: 400,
-
                       child: TextField(
                         controller: _nombreController,
                         decoration: InputDecoration(
@@ -201,19 +305,173 @@ class _RegistroPagState extends State<RegistroPag> {
 
                   // PEDIR APELLIDOS
                   Container(
-                      width: 400,
-
-                      child: TextField(
-                        controller: _apellidoController,
-                        decoration: InputDecoration(
-                            labelText: "Apellido(s)",
-                            labelStyle: Theme.of(context).textTheme.bodySmall, //copyWith(fontWeight:...),
-                            border: OutlineInputBorder(),
-                            focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Theme.of(context).primaryColor,)
-                            )
-                        ),
+                    width: 400,
+                    child: TextField(
+                      controller: _apellidoController,
+                      decoration: InputDecoration(
+                        labelText: "Apellido(s)",
+                        labelStyle: Theme.of(context).textTheme.bodySmall, //copyWith(fontWeight:...),
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).primaryColor,)
+                        )
+                      ),
                     )
+                  ),
+
+                  SizedBox(height: 30),
+
+
+
+                  // PEDIR ESTADO
+                  Container(
+                    width: 400,
+                    height: 55,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        labelText: "Entidad",
+                        labelStyle: Theme.of(context).textTheme.bodySmall, //copyWith(fontWeight:...),
+                        border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Theme.of(context).primaryColor,)
+                        ),
+                        suffixIcon: InputDecorator(
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                          ),
+
+                          child: DropdownButton<Estado>(
+                            isExpanded: true,
+                            value: selectedState,
+                            items: estados.map((estado) => DropdownMenuItem(
+                              value: estado,
+                              child: Text(estado.name),
+                            )).toList(),
+                            hint: Padding(
+                              //padding: EdgeInsets.symmetric(horizontal: 8),
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                              child: Text("Selecciona tu estado",
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ),
+                            underline: Container(height: 0,),
+
+                            onChanged: (estado) {
+                              setState(() {
+                                selectedState = estado;
+                                selectedCity = null;
+                                selectedNeighborhood = null;
+                              });
+                              cargarDropdown();
+                              print("Creo que ha terminado la función cargarDropdownCiudades");
+                            },
+                          ),
+                        ),
+                      ),
+                    )
+                  ),
+
+                  SizedBox(height: 30),
+
+
+                  // PEDIR CIUDAD
+                  Container(
+                      width: 400,
+                      height: 60,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: "Ciudad",
+                          labelStyle: Theme.of(context).textTheme.bodySmall, //copyWith(fontWeight:...),
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Theme.of(context).primaryColor,)
+                          ),
+                          suffixIcon: InputDecorator(
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                            ),
+
+                            child: DropdownButton<Ciudad>(
+                              isExpanded: true,
+                              value: selectedCity,
+                              items: ciudades.map((ciudad) => DropdownMenuItem(
+                                value: ciudad,
+                                child: Text(ciudad.name),
+                              )).toList(),
+                              hint: Padding(
+                                //padding: EdgeInsets.symmetric(horizontal: 8),
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                child: Text("Selecciona tu ciudad",
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                              underline: Container(height: 0,),
+
+                              onChanged: (ciudad) {
+                                setState(() {
+                                  selectedCity = ciudad;
+                                  selectedNeighborhood = null;
+                                });
+                                cargarDropdownColonias();
+                                print("Creo que ha terminado la función cargarDropdownColonias");
+                                print("Selected city: ${selectedCity.id}");
+                              },
+                            ),
+                          ),
+                        ),
+                      )
+                  ),
+
+                  SizedBox(height: 30),
+
+
+
+                  // PEDIR COLONIA
+                  Container(
+                      width: 400,
+                      height: 50,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          labelText: "Entidad",
+                          labelStyle: Theme.of(context).textTheme.bodySmall, //copyWith(fontWeight:...),
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Theme.of(context).primaryColor,)
+                          ),
+                          suffixIcon: InputDecorator(
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                            ),
+
+                            child: DropdownButton<Colonia>(
+                              isExpanded: true,
+                              value: selectedNeighborhood,
+                              items: colonias.map((colonia) => DropdownMenuItem(
+                                value: colonia,
+                                child: Text(colonia.name),
+                              )).toList(),
+                              hint: Padding(
+                                //padding: EdgeInsets.symmetric(horizontal: 8),
+                                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                                child: Text("Selecciona tu colonia",
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                              underline: Container(height: 0,),
+
+                              onChanged: (colonia) {
+                                setState(() {
+                                  selectedNeighborhood = colonia;
+                                });
+                                cargarDropdown();
+                                print("Selección: estado - $selectedState");
+                                print("Selección: ciudad - $selectedCity");
+                                print("Selección: colonia - $selectedNeighborhood");
+                              },
+                            ),
+                          ),
+                        ),
+                      )
                   ),
 
                   SizedBox(height: 30),
@@ -222,7 +480,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   // PEDIR EMAIL
                   Container(
                       width: 400,
-
                       child: TextField(
                         controller: _emailController,
                         decoration: InputDecoration(
@@ -242,7 +499,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   // PEDIR CONTRASEÑA
                   Container(
                       width: 400,
-
                       child: TextField(
                         controller: _passwordController,
                         decoration: InputDecoration(
@@ -264,9 +520,7 @@ class _RegistroPagState extends State<RegistroPag> {
                   SizedBox(height: 30,),
 
                   // MENSAJE DE ERROR, EN CASO DE HABER
-                  Container(
-                    child: Text(_error == true ? "Hubo un error: ${descripError}" : ""),
-                  ),
+                  Text(_error == true ? "Hubo un error: $descripError" : ""),
 
                   SizedBox(height: 30,),
 
@@ -276,7 +530,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   Container(
                     width: 300,
                     padding: EdgeInsets.all(10),
-
                     child: ElevatedButton(
                       child: Text(
                         "SIGUIENTE",
@@ -289,12 +542,8 @@ class _RegistroPagState extends State<RegistroPag> {
                         ),
                       ),
                       onPressed: () async {
-                        _register();
                         print("Registremos al usuario con su correo y contraseña.");
-
-                        //Navigator.of(context).pushNamed("/signup");
-                        //appState.RegistroPag  // esta es la otra forma de cambiar de página. Cambiar el estado de la página con otra clase que rellene el contenedor (la página).
-
+                        _register();
                       },
                     ),
                   ),
@@ -304,7 +553,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   Container(
                     width: 300,
                     padding: EdgeInsets.all(10),
-
                     child: OutlinedButton(
                       child: Text(
                         "Registrarte con Google",
@@ -318,14 +566,9 @@ class _RegistroPagState extends State<RegistroPag> {
                       ),
                       onPressed: () {
                         print("Chequemos con Google");
-                        //Navigator.of(context).pop();
-                        //
                         signInWithGoogle();
-//                    var user;
                         //final user = userCredential.user;
                         //print(userCredential.user.uid);
-
-                        //appState.RegistroPag
                       },
                     ),
                   ),
@@ -335,7 +578,6 @@ class _RegistroPagState extends State<RegistroPag> {
                   Container(
                     width: 300,
                     padding: EdgeInsets.all(10),
-
                     child: TextButton(
                       child: Text(
                         "Regresar",
@@ -344,7 +586,6 @@ class _RegistroPagState extends State<RegistroPag> {
                       onPressed: () {
                         print("Regresemos");
                         Navigator.of(context).pop();
-                        //appState.RegistroPag
                       },
                     ),
                   ),

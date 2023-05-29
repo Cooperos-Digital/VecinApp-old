@@ -1,12 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vecinapp_2/comp/widgets_pag.dart';
 
-
-//import "registro.dart";
-
-
-//final FirebaseAuth _auth = FirebaseAuth.instance;
 
 
 class HomePag extends StatefulWidget {
@@ -18,16 +14,8 @@ class HomePag extends StatefulWidget {
 }
 
 
-
 class _HomePagState extends State<HomePag> {
-  //final String _userEmail;
-
-  //cerrarSesion() {
-  //  FirebaseAuth.instance.signOut();
-  //}
-
-
-
+  final User? user = FirebaseAuth.instance.currentUser;
   @override
   Widget build(BuildContext context) {
 
@@ -53,62 +41,7 @@ class _HomePagState extends State<HomePag> {
 
 
       // MENÚ
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.inversePrimary,
-              ),
-              child: Text(
-                'Menú',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Mensajes'),
-              onTap: () {
-                print("Mensajes");
-                },
-            ),
-            ListTile(
-              leading: Icon(Icons.account_circle),
-              title: Text('Perfil'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed("/perfil");
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Preferencias'),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushNamed("/preferencias");
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text('Cerrar sesión'),
-              onTap: () {
-                //cerrarSesion();
-                FirebaseAuth.instance.signOut();
-              },
-            ),
-//            ListTile
-  //            leading: Icon(Icons.face_3_outlined),
-    //          title: Text('Cerrar menú'),
-      //        onTap: () {Navigator.pop(context);},
-        //    ),
-          ],
-        ),
-      ),
-
+      drawer: WidgetsPag.drawerMenu(context),
 
       // CONTENIDO DE LA PÁGINA PRINCIPAL
       body: Center(
@@ -119,7 +52,7 @@ class _HomePagState extends State<HomePag> {
 
             // TÍTULO
             Text(
-              "Página principal",
+              "Bienvenido a VecinApp",
               style: Theme.of(context).textTheme.displaySmall,
             ),
 
@@ -127,11 +60,16 @@ class _HomePagState extends State<HomePag> {
 
 
             // ESTO QUE SIGUE YA NO DEBERÍA ESTAR AQUÍ, SE IRÍA A LA PÁG DE PERFIL
-            // IMAGEN DEL USUARIO
-
-
             // DATOS DEL USUARIO
-            Text("Tu correo: ${widget.userEmail}"),
+            Center(
+              child: Column(
+                children: [
+                  Text("Tu correo: ${widget.userEmail}"),
+                  Text("Tu correo: ${user?.email}"),
+//                  Text("Tu vecindad: ${user?.colonia}"),
+                ],
+              ),
+            ),
 
 
             // BOTÓN CERRAR SESIÓN
@@ -142,16 +80,11 @@ class _HomePagState extends State<HomePag> {
                   "Cerrar sesión",
                   //style: ButtonThemeData.textTheme,
                 ),
-//                onHover: ,
                 onPressed: () {   // necesariamente debe ser async?
                   FirebaseAuth.instance.signOut();
                 },
               ),
             )
-
-
-
-
           ],
         ),
       )
