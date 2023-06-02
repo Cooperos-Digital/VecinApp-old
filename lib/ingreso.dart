@@ -17,34 +17,41 @@ class _IngresoPagState extends State<IngresoPag> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  late bool _sucess;
   late String  _userEmail;
+  bool _error = false;
+  String descripError = "";
 
   void _login() async {
     print("Corriendo función _login()");
-    final User? user = (
-        await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text)
-    ).user;
+    try {
+      final User? user = (
+          await _auth.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text)
+      ).user;
 
-    if (user != null) {
-      setState(() {
-//        _sucess = true;
-        _userEmail = user.email!;
-        print("SE PUDO INGRESAR CON ÉXITO. Correo: ${_userEmail}");
+      if (user != null) {
+        setState(() {
+          _userEmail = user.email!;
+          print("SE PUDO INGRESAR CON ÉXITO. Correo: $_userEmail");
 
-        //Navigator.of(context).pushNamed("/home",);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => HomePag(userEmail: _userEmail),
-          ),
-        );
-      });
-    } else {
+          //Navigator.of(context).pushNamed("/home",);
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => HomePag(userEmail: _userEmail),
+            ),
+          );
+        });
+      } else {
+        setState(() {
+          // Creo que esto aún no se corre porque falta agregar un handle error en el  await _auth.signIn...  o algo así
+          print("NO SE PUDO INGRESAR");
+        });
+      }
+    } catch (e) {
       setState(() {
-        // Creo que esto aún no se corre porque falta agregar un handle error en el  await _auth.signIn...  o algo así
-        _sucess = false;
-        print("NO SE PUDO INGRESAR");
+        descripError = e.toString();
       });
+//      descripError = e.toString();
+      print("El error es $descripError");
     }
   }
 
@@ -55,11 +62,10 @@ class _IngresoPagState extends State<IngresoPag> {
     super.initState();
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        print('User is currently signed out!');
-        print(user?.uid);
+        print("Usuario no loggeado");
         //Navigator.of(context).pushNamed("/registro");
       } else {
-        print('User is signed in!');
+        print("Usuario logeado. Id: ${user?.uid}");
         Navigator.of(context).pushNamed("/home");
       }
     });
@@ -135,7 +141,10 @@ class _IngresoPagState extends State<IngresoPag> {
                       )
                   ),
 
-                  //SizedBox(height: 120),
+                  SizedBox(height: 30),
+                  Container(
+                    child: Text(descripError),
+                  ),
                   Spacer(
                     flex: 1,
                   ),

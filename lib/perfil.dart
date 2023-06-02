@@ -1,9 +1,14 @@
 //import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
+
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:vecinapp_2/logica/funciones_usuario.dart';
 
 
 class PerfilPag extends StatefulWidget {
@@ -12,11 +17,42 @@ class PerfilPag extends StatefulWidget {
 }
 
 class _PerfilPagState extends State<PerfilPag> {
-  String imagenUrl = "";
+  String _nombre = "Persona";
+  String _apellido = "Anónima";
+  String _email = "sin correo";
+  String _colonia_id = "colonia id";
+  String _colonia = "colonia";
+  String _ciudad = "ciudad";
+  String _estado = "estado";
+  String _photoUrl = "";
 
+  @override
+  void initState() {
+    super.initState();
+    _getUserData();
+  }
+
+  // TRAER LA INFO DEL USUARIO DE FIRESTORE DATABASE
+  Future<void> _getUserData() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    final DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('usuarios').doc(user?.uid).get();
+
+    setState(() {
+      _nombre = snapshot.get('nombre');
+      _apellido = snapshot.get("apellido");
+      _email = snapshot.get('email');
+      _colonia_id = snapshot.get('colonia-id');
+      _colonia = snapshot.get('colonia');
+      _ciudad = snapshot.get("ciudad");
+      _estado = snapshot.get('estado');
+      //_photoUrl = snapshot.get('photoUrl');
+    });
+  }
 
   // ESCOGER IMAGEN DE PERFIL  -
   // https://www.youtube.com/watch?v=0mLICZlWb2k&t=94s
+  // and this one for web: https://www.youtube.com/watch?v=vZHWE6S9RHY
+  // Tristemente creo que no funcionan bien. Aún. Falta entenderle más
   //void escogerImagenPerfil() async {
   //  print("subiendo imagen...");
   //  final imagen = await ImagePicker().pickImage(
@@ -37,27 +73,37 @@ class _PerfilPagState extends State<PerfilPag> {
   //    }),
   //  });
   //}
-  PickedFile? _image;
+  //PickedFile? _image;
+
   Future<void> getImage() async {
-    final pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+    PickedFile? pickedFile;
+    if (kIsWeb) {
+      print("Aplicación corriendo en Web");
+//      pickedFile = await ImagePickerWeb.getImageAsFile();   // or as a File?
+      print(pickedFile);
+
+    } else {
+      pickedFile = await ImagePicker().getImage(source: ImageSource.gallery);
+      print(pickedFile);
+    }
 
     setState(() {
-      _image = pickedFile;
+    //  _image = pickedFile! ?? "";
     });
   }
   // Implement function to upload image to Firebase storage
-  FirebaseStorage storage = FirebaseStorage.instance;
+  //FirebaseStorage storage = FirebaseStorage.instance;
 
-  Future<String> uploadFile() async {
-    Reference reference = storage.ref().child('images/${_image!.path}');
-    UploadTask uploadTask = reference.putFile(File(_image!.path));
-    TaskSnapshot taskSnapshot = await uploadTask;
-    String url = await taskSnapshot.ref.getDownloadURL();
-    setState(() {
-      imagenUrl = url;
-    });
-    return url;
-  }
+  //Future<String> uploadFile() async {
+  //  Reference reference = storage.ref().child('images/${_image!.path}');
+  //  UploadTask uploadTask = reference.putFile(File(_image!.path));
+  //  TaskSnapshot taskSnapshot = await uploadTask;
+  //  String url = await taskSnapshot.ref.getDownloadURL();
+  //  setState(() {
+  //    imagenUrl = url;
+  //  });
+  //  return url;
+  //}
 
 // Save image URL to user's profile in Firestore
 //  final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -74,8 +120,6 @@ class _PerfilPagState extends State<PerfilPag> {
 
 
 
-
-
   // BUILD METHOD
   @override
   Widget build(BuildContext context) {
@@ -84,7 +128,7 @@ class _PerfilPagState extends State<PerfilPag> {
         toolbarOpacity: 0.9,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          color: Theme.of(context).primaryColorDark,
+          //color: Theme.of(context).primaryColorDark,
           onPressed: () {
             Navigator.of(context).pushNamed("/home");
 //            Navigator.of(context).pop();
@@ -96,212 +140,179 @@ class _PerfilPagState extends State<PerfilPag> {
       // CONTENIDO DE LA PÁGINA DE PERFIL
       body: SingleChildScrollView(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+        scrollDirection: Axis.vertical,
 
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          child: Center(
-            child: Column(
-              //mainAxisAlignment: MainAxisAlignment.center,
+        child: Center(
+          child: Column(
+            //mainAxisAlignment: MainAxisAlignment.center,
 
-              children: [
-                //SizedBox(height: 30,),
+            children: [
+              //SizedBox(height: 30,),
 
-                Text(
-                  "Perfil",
-                  style: Theme.of(context).textTheme.headlineMedium,
+              Text(
+                "Perfil",
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+
+              SizedBox(height: 30,),
+
+
+              // IMAGEN DEL USUARIO
+              GestureDetector(
+                onTap: () async {
+                  //escogerImagenPerfil();
+                  getImage();
+                  //uploadFile();
+                  print("Imagen de usuario: ${_photoUrl}");
+                },
+
+                child: CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  radius: MediaQuery.of(context).size.width * 0.12,
+
+                  //child: FirebaseAuth.instance.currentUser?.photoURL != null ?
+                  //Image.network(FirebaseAuth.instance.currentUser?.photoURL.toString() ?? "", width: 80,) :
+                  //Icon(Icons.person_add, size: 80, color: Theme.of(context).splashColor,),
+
+                  child: _photoUrl == "" ?
+                    Icon(Icons.person_add, size: 80, color: Theme.of(context).splashColor,) :
+                    Image.network(_photoUrl, width: 80,)
+
+                  //CircleAvatar(
+                  //  backgroundImage: AssetImage("assets/usuario1.jpg",),
+                  //  radius: MediaQuery.of(context).size.width * 0.11,
+                  //)
+
                 ),
+              ),
 
-                SizedBox(height: 30,),
+
+              Text("Foto: ${FirebaseAuth.instance.currentUser?.photoURL}"),
+              Text("Foto: ${_photoUrl}"),
+
+              SizedBox(height: 10,),
+              Text("$_colonia."),
+              Text("$_ciudad, $_estado."),
+
+              SizedBox(height: 10,),
+              Text("Gente de tu colonia:"),
+
+              SizedBox(height: 45,),
 
 
-                // IMAGEN DEL USUARIO
-                GestureDetector(
-                  onTap: () async {
-                    //escogerImagenPerfil();
-                    getImage();
-                    uploadFile();
-                    print("Imagen de usuario: ${imagenUrl}");
+              // DATOS DEL USUARIO
+              ListView(
+                shrinkWrap: true,
+                children: [
+                  ListTile(
+                    title: Text("Nombre"),
+                    subtitle: Text(_nombre),
+//                        subtitle: Text(FirebaseAuth.instance.currentUser?.displayName ?? "Persona"),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {}
+                    ),
+                  ),
+                  ListTile(
+                    title: Text("Apellido"),
+                    subtitle: Text(_apellido),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {}
+                    ),
+                  ),
+                  ListTile(
+                    //leading: ,
+                    title: Text("Correo electrónico"),
+                    subtitle: Text(_email),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        print("se verá más bonito?");
+                      },
+                    )
+                  ),
+                  ListTile(
+                    title: Text("Verificación"),
+                    subtitle: Text(
+                      FirebaseAuth.instance.currentUser?.emailVerified == true ? "Usuario verificado" : "Aún no estás verificado. ¡Solicita tu correo de verificación!"
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        print("se verá más bonito?");
+                      },
+                    )
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 50,),
+
+
+              // BOTÓN CERRAR SESIÓN
+              Container(
+                child: TextButton(
+                  child: Text(
+                    "Cerrar sesión",
+                    //style: ButtonThemeData.textTheme,
+                  ),
+                  onPressed: () {
+                    print("Cerrando sesión...");
+                    FirebaseAuth.instance.signOut();
+                    //Navigator.of(context).pup();
+                    Navigator.pop(context);
                   },
-
-                  child: CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    radius: MediaQuery.of(context).size.width * 0.12,
-
-                    //child: FirebaseAuth.instance.currentUser?.photoURL != null ?
-                    //Image.network(FirebaseAuth.instance.currentUser?.photoURL.toString() ?? "", width: 80,) :
-                    //Icon(Icons.person_add, size: 80, color: Theme.of(context).splashColor,),
-
-                    child: imagenUrl == "" ?
-                      Icon(Icons.person_add, size: 80, color: Theme.of(context).splashColor,) :
-                      Image.network(imagenUrl, width: 80,)
-
-                    //CircleAvatar(
-                    //  backgroundImage: AssetImage("assets/usuario1.jpg",),
-                    //  radius: MediaQuery.of(context).size.width * 0.11,
-                    //)
-
-                  ),
                 ),
+              ),
 
-                SizedBox(height: 45,),
-
-                Text("Foto: ${FirebaseAuth.instance.currentUser?.photoURL}"),
+              SizedBox(height: 15,),
 
 
-                // DATOS DEL USUARIO
-  //          Text("Tu correo: ${widget.userEmail}"),
-                Expanded(
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      ListTile(
-                        title: Text("Nombre"),
-                        subtitle: Text(FirebaseAuth.instance.currentUser?.displayName ?? "Persona"),
-                        trailing: IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            print("se verá más bonito?");
-                          }
-                        ),
-                      ),
-                      //ListTile(
-                      //  title: Text("Apellido"),
-                      //  subtitle: Text(FirebaseAuth.instance.currentUser?.providerData.first.displayName  ?? "Anónima"),
-                      //  trailing: IconButton(
-                      //    icon: Icon(Icons.edit),
-                      //    onPressed: () {
-                      //      print("se verá más bonito?");
-                      //    }
-                      //  ),
-                      //),
-                      ListTile(
-                        //                leading: ,
-                        title: Text("Correo electrónico"),
-                        subtitle: Text(FirebaseAuth.instance.currentUser?.email ?? "Aún no tienes correo, ingresa uno."),
-                        trailing: IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            print("se verá más bonito?");
-                          },
+              // BOTÓN ELIMINAR CUENTA
+              //Container(
+              //  child: TextButton(
+              //    child: Text(
+              //      "Eliminar cuenta",
+              //      //style: ButtonThemeData.textTheme,
+              //    ),
+              //    onPressed: () async {
+              //      print("Eliminar cuenta...");
+              //      if (FirebaseAuth.instance.currentUser != null) {
+              //        eliminarCuenta();
+              //      }
+//            //         await user? delete;
+              //    },
+              //  ),
+              //),
+
+              //SizedBox(height: 15,),
+
+
+              // BOTÓN RESTABLECER CONTRASEÑA
+              Container(
+                child: TextButton(
+                  child: Text(
+                    "Restablecer contraseña",
+                    //style: ButtonThemeData.textTheme,
+                  ),
+                  onPressed: () async {
+                    print("Mandar correo para restablecer contraseña...");
+                    if (FirebaseAuth.instance.currentUser != null) {
+                      await FirebaseAuth.instance.sendPasswordResetEmail(email: FirebaseAuth.instance.currentUser?.email ?? "");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Te enviamos un correo con la liga para restablecer tu contraseña.', style: Theme.of(context).textTheme.bodyMedium),
+                          backgroundColor: Theme.of(context).colorScheme.inverseSurface,
                         )
-                      ),
-
-                      ListTile(
-                        title: Text("Verificación"),
-                        subtitle: Text(
-                          //if ( FirebaseAuth.instance.currentUser?.emailVerified == true) {
-                          //  FirebaseAuth.instance.currentUser?.emailVerified : "Aún no tienes correo, ingresa uno."),
-                          //}
-
-                          FirebaseAuth.instance.currentUser?.emailVerified == true ? "Usuario verificado" : "Aún no estás verificado. ¡Solicita tu correo de verificación!"
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-
-                            print("se verá más bonito?");
-                          },
-                        )
-                      ),
-                    ],
-                  ),
+                      );
+                    }
+                  },
                 ),
+              ),
 
-                SizedBox(height: 30,),
-
-
-
-
-                // ----------------------
-            // Retrieve image URL from user's profile in Firestore and display it
-            //StreamBuilder<DocumentSnapshot>(
-            //  stream: firestore.collection('users').doc('userId').snapshots(),
-            //  builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-            //    if (snapshot.hasError) {
-            //      return Text('Error: ${snapshot.error}');
-            //    } else if (!snapshot.hasData) {
-            //      return Text('Loading...');
-            //    } else {
-            //      String imageUrl = snapshot.data!.get('profileImageUrl');
-            //      return Image.network(imageUrl);
-            //    }
-            //  },
-            //);
-              // -------------
-
-
-                // BOTÓN CERRAR SESIÓN
-                Container(
-                  child: TextButton(
-                    child: Text(
-                      "Cerrar sesión",
-                      //style: ButtonThemeData.textTheme,
-                    ),
-                    onPressed: () {
-                      print("Cerrando sesión...");
-                      FirebaseAuth.instance.signOut();
-                      //Navigator.of(context).pup();
-                      Navigator.pop(context);
-                    },
-                  ),
-                ),
-
-                SizedBox(height: 15,),
-
-
-                // BOTÓN ELIMINAR CUENTA
-                Container(
-                  child: TextButton(
-                    child: Text(
-                      "Eliminar cuenta",
-                      //style: ButtonThemeData.textTheme,
-                    ),
-                    onPressed: () async {
-                      print("Eliminar cuenta...");
-                      if (FirebaseAuth.instance.currentUser != null) {
-                        await FirebaseAuth.instance.currentUser?.delete();
-                        //Navigator.of(context).pop();
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Es una pena ver que te vas. Tu cuenta se ha eliminado.', style: Theme.of(context).textTheme.bodyLarge),
-                              backgroundColor: Theme.of(context).colorScheme.surface,
-                            )
-                        );
-                      }
-//                     await user? delete;
-                    },
-                  ),
-                ),
-
-                SizedBox(height: 15,),
-
-
-                // BOTÓN RESTABLECER CONTRASEÑA
-                Container(
-                  child: TextButton(
-                    child: Text(
-                      "Restablecer contraseña",
-                      //style: ButtonThemeData.textTheme,
-                    ),
-                    onPressed: () async {
-                      print("Mandar correo para restablecer contraseña...");
-                      if (FirebaseAuth.instance.currentUser != null) {
-                        await FirebaseAuth.instance.sendPasswordResetEmail(email: FirebaseAuth.instance.currentUser?.email ?? "");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Te enviamos un correo con la liga para restablecer tu contraseña.', style: Theme.of(context).textTheme.bodyMedium),
-                            backgroundColor: Theme.of(context).colorScheme.inverseSurface,
-                          )
-                        );
-                      }
-                    },
-                  ),
-                ),
-
-                SizedBox(height: 120,),
-              ],
-            ),
+              SizedBox(height: 90,),
+            ],
           ),
         ),
       ),

@@ -1,6 +1,11 @@
+//import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:vecinapp_2/logica/funciones_usuario.dart';
+
+import 'logica/funciones_usuario/borrar_usuario.dart';
+
 
 class PreferenciasPag extends StatefulWidget {
 
@@ -10,8 +15,9 @@ class PreferenciasPag extends StatefulWidget {
 
 class _PreferenciasPagState extends State<PreferenciasPag> {
   final user = FirebaseAuth.instance.currentUser;
-//  final String _userEmail = user.emailEmail ?? "";
 
+
+  // BUILD METHOD
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,21 +51,21 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
 
               // LISTA
               ListTile(
-                leading: Icon(Icons.message),
+                leading: Icon(Icons.book),
                 title: Text('Aprende a usar VecinApp'),
                 onTap: () {
                   print("Manual de usuario.");
                 },
               ),
               ListTile(
-                leading: Icon(Icons.account_circle),
+                leading: Icon(Icons.info),
                 title: Text('Acerca de'),
                 onTap: () {
                   print("Sobre el proyecto");
                 },
               ),
               ListTile(
-                leading: Icon(Icons.settings),
+                leading: Icon(Icons.password),
                 title: Text('Cambiar contraseña'),
                 onTap: () async {
                   //https://firebase.google.com/docs/auth/flutter/manage-users?hl=es-419
@@ -79,18 +85,18 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.face),
-                title: Text('Borrar cuenta'),
+                leading: Icon(Icons.logout),
+                title: Text('Cerrar sesión'),
                 onTap: () {
-                  _alertaCerrarSesion();
+                  FirebaseAuth.instance.signOut();
                 },
               ),
               ListTile(
-                leading: Icon(Icons.face_2),
-                title: Text('Regresar al inicio'),
+                leading: Icon(Icons.dangerous),
+                title: Text('Borrar cuenta'),
                 onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  //borrarUsuario(context);
+                  borrarUsuario(context);
                 },
               ),
             ],
@@ -98,47 +104,4 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
     );
   }
 
-
-
-
-  // FUNCIONES
-  Future<void> _alertaCerrarSesion() async {
-    return showDialog<void>(
-      context: context,
-//      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: const Text('Eliminar cuenta'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ListBody(
-                  children: const <Widget>[
-                    Text('Si decides continuar, se borrarán tus datos de nuestro sistema.'),
-                    Text('¿Deseas continuar?'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Aceptar'),
-              onPressed: () async {
-                Navigator.pop(context);
-                //Navigator.of(context).pop();
-                SnackBar(
-                  content: Text("Tus datos se han borrado con éxito."),
-                );
-                await user?.delete();
-
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
 }
