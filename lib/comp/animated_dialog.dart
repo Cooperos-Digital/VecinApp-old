@@ -68,7 +68,7 @@ class _AnimatedDialogState extends State<AnimatedDialog> {
                   child: StreamBuilder(
                     stream: _firestore.collection("usuarios").snapshots(),
                     builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                      List data = !snapshot.hasData?  []:  snapshot.data!.docs.where((usuario) => usuario["email"].toString().contains(search)).toList();
+                      List data = !snapshot.hasData?  []:  snapshot.data!.docs.where((element) => element["email"].toString().contains(search)).toList();
                       // data van a ser los usuarios
                       return data.isEmpty || data == [] ? Padding(padding: EdgeInsets.all(10), child: Text("No se encontraron resultados"),)  :  ListView.builder(
                         itemCount: data.length,
@@ -76,9 +76,10 @@ class _AnimatedDialogState extends State<AnimatedDialog> {
                           Timestamp time = data[i]["ultima-conexion"];
                           return ChatWidgets.card(
                             title: data[i]["nombre"] ?? "No hay resultados",
-                            subtitle: "oij",
-                            time: DateFormat("EEE hh:mm").format(time.toDate()),    // requiere el package "intl"
-                            //time: time.toString(),
+                            subtitle: "oij",   // aquí hay que sacar el último mensaje de la conversación.
+                            //subtitle: data[i]["mensaje"],
+                            //subtitle: data[i]["ultimo-mensaje"],
+                            time: DateFormat("EEE hh:mm").format(time.toDate()),
                             onTap: () {
                               //Navigator.of(context).pop();
                               //setState(() {show: false;});
@@ -86,9 +87,9 @@ class _AnimatedDialogState extends State<AnimatedDialog> {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) {
-                                    return ChatPage(   // este ChatPage era un  const  pero eso marcaba error.
+                                    return ChatPage(
                                       id: data[i].id.toString(),
-//                                      id: "",
+                                      nombre: data[i]["nombre"]
                                     );
                                   },
                                 ),

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:vecinapp_2/logica/funciones_usuario.dart';
 
+import 'logica/funciones_usuario/borrar_usuario.dart';
+
 
 class PreferenciasPag extends StatefulWidget {
 
@@ -13,8 +15,6 @@ class PreferenciasPag extends StatefulWidget {
 
 class _PreferenciasPagState extends State<PreferenciasPag> {
   final user = FirebaseAuth.instance.currentUser;
-//  final String _userEmail = user.emailEmail ?? "";
-
 
 
   // BUILD METHOD
@@ -95,7 +95,8 @@ class _PreferenciasPagState extends State<PreferenciasPag> {
                 leading: Icon(Icons.dangerous),
                 title: Text('Borrar cuenta'),
                 onTap: () {
-                  borrarCuenta(context);
+                  //borrarUsuario(context);
+                  borrarUsuario(context);
                 },
               ),
             ],

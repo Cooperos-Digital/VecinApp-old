@@ -66,7 +66,7 @@ class _HomePagState extends State<HomePag> {
                 children: [
                   Text("Tu correo: ${widget.userEmail}"),
                   Text("Tu correo: ${user?.email}"),
-//                  Text("Tu vecindad: ${user?.colonia}"),
+                  //Text("Tu vecindad: ${user?}"),
                 ],
               ),
             ),

@@ -56,7 +56,7 @@ class ChatWidgets {
     );
   }
 
-  static Widget messagesCard(bool check, message, time) {
+  static Widget messagesCard(bool check, message, time, remitente) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -79,9 +79,19 @@ class ChatWidgets {
               margin: const EdgeInsets.all(8),
               padding: const EdgeInsets.all(10),
               decoration: Styles.messagesCardStyle(check),
-              child: Text(
-                '$message\n\n$time',
-                style: TextStyle(color: check ? Colors.white : Colors.black),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$message\n\n',
+                    style: TextStyle(color: check ? Colors.white : Colors.black),
+                  ),
+                  Text('$remitente - ${time}',
+                    style: TextStyle(
+                      color: check ? Colors.white : Colors.black,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -102,57 +112,19 @@ class ChatWidgets {
   }
 
   static messageField({required onSubmit}) {
-    final con = TextEditingController();
+    final controlador = TextEditingController();
     return Container(
       margin: const EdgeInsets.all(5),
       decoration: Styles.messageFieldCardStyle(),
       child: TextField(
-        controller: con,
+        controller: controlador,
         decoration: Styles.messageTextFieldStyle(onSubmit: () {
-          onSubmit(con);
+          onSubmit(controlador);
         }),
       ),
     );
   }
 
-  static drawer() {
-    return Drawer(
-      backgroundColor: Colors.indigo.shade400,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 20),
-          child: Theme(
-            data: ThemeData.dark(),
-            child: Column(
-              children: const [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.grey,
-                  child: Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Divider(
-                  color: Colors.white,
-                ),
-                ListTile(
-                  leading: Icon(Icons.person),
-                  title: Text('Profile'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.logout),
-                  title: Text('Logout'),
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   static searchBar(bool open, ) {
     return AnimatedDialog(

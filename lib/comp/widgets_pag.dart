@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class WidgetsPag {
+
+  // MENÚ
   static drawerMenu(context) {
     return Drawer(
       child: ListView(
@@ -59,4 +61,7 @@ class WidgetsPag {
       ),
     );
   }
+
+  // OTRO DRAWER
+
 }

@@ -128,7 +128,7 @@ class _PerfilPagState extends State<PerfilPag> {
         toolbarOpacity: 0.9,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
-          color: Theme.of(context).primaryColorDark,
+          //color: Theme.of(context).primaryColorDark,
           onPressed: () {
             Navigator.of(context).pushNamed("/home");
 //            Navigator.of(context).pop();
@@ -189,10 +189,13 @@ class _PerfilPagState extends State<PerfilPag> {
 
               Text("Foto: ${FirebaseAuth.instance.currentUser?.photoURL}"),
               Text("Foto: ${_photoUrl}"),
+
+              SizedBox(height: 10,),
               Text("$_colonia."),
               Text("$_ciudad, $_estado."),
-              Text("$_colonia_id"),
-              Text("Gente de tu colonia"),
+
+              SizedBox(height: 10,),
+              Text("Gente de tu colonia:"),
 
               SizedBox(height: 45,),
 
@@ -256,8 +259,7 @@ class _PerfilPagState extends State<PerfilPag> {
                   ),
                   onPressed: () {
                     print("Cerrando sesión...");
-                    cerrarSesion();
-                    //FirebaseAuth.instance.signOut();
+                    FirebaseAuth.instance.signOut();
                     //Navigator.of(context).pup();
                     Navigator.pop(context);
                   },

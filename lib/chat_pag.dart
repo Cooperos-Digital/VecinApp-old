@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vecinapp_2/comp/estilos.dart';
 import 'package:vecinapp_2/comp/chat_widgets.dart';
+import 'package:vecinapp_2/logica/funciones_chat/enviar_mensaje.dart';
 
 class ChatPage extends StatefulWidget {
   final String id;
-  const ChatPage({Key? key, required this.id}) : super(key: key);
+  final String nombre;
+  const ChatPage({Key? key, required this.id, required this.nombre}) : super(key: key);
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -15,6 +17,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   var chatroomId;
+  var tipoChat;
 
 
   @override
@@ -24,12 +27,14 @@ class _ChatPageState extends State<ChatPage> {
 //    print("Este es el id, ojalá se pueda leer: $id");
 
     return Scaffold(
-      backgroundColor: Colors.indigo.shade400,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.indigo.shade400,
-        title: const Text('Conversación ...'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: widget.nombre == null ? Text("conversación") : Text(widget.nombre) ,
         elevation: 0,
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))],
+        actions: [IconButton(onPressed: () {
+
+        }, icon: const Icon(Icons.more_vert))],
       ),
 
 
@@ -43,18 +48,11 @@ class _ChatPageState extends State<ChatPage> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  'Chats',
-                  style: Styles.h1(),
-                ),
+                const SizedBox(width: 50,),
                 const Spacer(),
-                Text(
-                  'Last seen: 04:50',
-                  style: Styles.h1().copyWith(fontSize: 12,fontWeight: FontWeight.normal,color: Colors.white70),
-                ),
-
+                Text('Ultimo mensaje: 04:50', style: Styles.h1().copyWith(fontSize: 12,fontWeight: FontWeight.normal,color: Colors.black38),),
                 const Spacer(),
-                const SizedBox(width: 50,)
+                const SizedBox(width: 50,),
               ],
             ),
           ),
@@ -67,53 +65,49 @@ class _ChatPageState extends State<ChatPage> {
                 stream: firestore.collection("chatrooms").snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasData) {
-                    print("snapshot has data");
+                    print("INICIO");
+                    print("chatrooms snapshot has data");
 
                     if (snapshot.data!.docs.isNotEmpty) {
-                      print("snapshot no es empty");
-                      //print("id: $id");
                       print("widget id: ${widget.id}");
                       print("usuario id: ${usuario?.uid}");
 
-                      // mostrar solo los mensajes de esta conversación  /  o los de este miembro?
+                      // mostrar solo los mensajes de esta conversación  /  buscnado a sus miembros?
                       //List<QueryDocumentSnapshot?> allData = snapshot.data!.docs.where((element) => element["miembros"].contains(widget.id)  &&  element["miembros"].contains(usuario?.uid)).toList();
-                      //List<QueryDocumentSnapshot?> allData = snapshot.data!.docs.where((element) => element["miembros"].contains(id)  &&  element["miembros"].contains(usuario?.uid)).toList();
-                      //List<QueryDocumentSnapshot?> allData = snapshot.data!.docs.where((element) => element["miembros"].contains(usuario?.uid)).toList();
-                      List<QueryDocumentSnapshot?> allData = snapshot.data!.docs.where((element) => element["miembros"].contains(widget.id)  &&  element["miembros"].contains(usuario?.uid)).toList();
+//                      List<QueryDocumentSnapshot?> allData = snapshot.data!.docs.where((element) => element["colonia-id"] == widget.id).toList();
+                      List<QueryDocumentSnapshot> allData = snapshot.data!.docs.where((element) => element["tipo"]=="vecinal"   ?   element["colonia-id"]==widget.id   :   element["miembros"].contains(widget.id)  &&  element["miembros"].contains(usuario?.uid)).toList();
                       QueryDocumentSnapshot? data = allData.isNotEmpty  ?  allData.first  :  null;
 
-                      //print("data id: ${data.id}");
-                      if (allData.isNotEmpty) {
-                        print("data no es empty");
-                      } else {
-                        print("data es empty");
-                      };
-                      if (data != null) {
-                        print("data no es null");
+                      print("data: $data");
+                      print("data tipo: ${data?["tipo"]}");
+                      tipoChat = data?["tipo"];
+                      if (data != null && tipoChat != "vecinal") {
                         chatroomId = data.id;
-                        print("success en cambiar chatroom id: $chatroomId");
-                        print("widget id 2: ${widget.id}");
-                        print("usuario id 2: ${usuario?.uid}");
-                        //setState(() {chatroomId = data.id;});
+                        print("Cambiar el chatroom id: $chatroomId");
+                      }
+                      else if (data != null && tipoChat == "vecinal") {
+                        chatroomId = data["colonia-id"];
                       }
 
                       // mostrar los mensaje en la conversación en orden.
                       return data == null  ?  Container()  :  StreamBuilder(
                         stream: data.reference.collection("mensajes").orderBy("hora", descending: true).snapshots(),
                         builder: (context, AsyncSnapshot<QuerySnapshot> snap) {
-                          print("snap has data: ${snap.hasData}");
-                          print("snap: $snap");
-                          print("chatroom id: $chatroomId");
-                          //child: Text("Algo está mal"),
+                          print("");
+                          print("INICIO MENSAJES");
+                          print("mensajes snap has data: ${snap.hasData}");
                           return !snap.hasData  ?  Container()  : ListView.builder(
                             itemCount: snap.data!.docs.length,
                             reverse: true,
                             itemBuilder: (context, i) {
                               var mensaje = snap.data!.docs[i];
                               return ChatWidgets.messagesCard(
-                                  snap.data!.docs[i]["remitente"] != widget.id,
+                                  snap.data!.docs[i]["remitente"] == FirebaseAuth.instance.currentUser!.uid,   // widget.id   // estaba en !=, pero salían al revés.
                                   snap.data!.docs[i]["mensaje"],
-                                  DateFormat("hh:mm a").format(mensaje["hora"].toDate()));
+                                  DateFormat("hh:mm a").format(mensaje["hora"].toDate()).toLowerCase(),
+                                  //snap.data!.docs[i]["remitente"],
+                                  "adan caballero",
+                              );
                             },
                           );
                         }
@@ -135,31 +129,12 @@ class _ChatPageState extends State<ChatPage> {
             color: Colors.white,
             child: ChatWidgets.messageField(
               onSubmit: (controller) {
-                if (chatroomId != null) {
-                  Map<String, dynamic> data = {
-                    "mensaje": controller.text.trim(),
-                    "remitente": usuario?.uid,
-                    "hora": DateTime.now(),
-                  };
-                  firestore.collection("chatrooms").doc(chatroomId).collection("mensajes").add(data);
-
-                } else {
-                  Map<String, dynamic> data = {
-                    "mensaje": controller.text.trim(),
-                    "remitente": usuario?.uid,
-                    "hora": DateTime.now(),
-                  };
-                  firestore.collection("chatrooms").add({
-                    "miembros": [usuario?.uid]
-                  }).then((value) async {
-                    value.collection("mensajes").add(data);
-                  });
-                };
-
+                enviarMensaje(firestore, usuario, controller, widget, chatroomId, tipoChat);
                 controller.clear();
               }
             ),
-          )
+          ),
+          SizedBox(height: 6,),
 
         ],
       ),
